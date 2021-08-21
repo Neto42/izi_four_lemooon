@@ -6,7 +6,7 @@ import pandas as pd
 class Blur(DataPrediction):
     def blur(self):
         images, predictions = self.data_prediction()
-
+        print(images, predictions)
         list1 = zip(images, predictions)
 
         for img, prediction in list1:

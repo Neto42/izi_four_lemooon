@@ -1,14 +1,10 @@
-import h5py
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 import tensorflow as tf
-from h5py import h5
 from tensorflow.python.keras.engine.sequential import Sequential
-# from tensorflow.keras.models import Sequential
 from keras.layers import Dense, Conv2D, MaxPool2D, Flatten, Dropout
 from keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.optimizers import Adam
 
 from sklearn.metrics import classification_report, confusion_matrix
 
@@ -20,10 +16,12 @@ import numpy as np
 
 class DataPreparation():
     def __init__(self):
-        self.str1 = 'number'
-        self.str2 = 'Dog'
+        self.str1 = 'logo'
+        self.str2 = 'number'
         self.labels = [self.str1, self.str2]
+        self.path_cnn = 'model_cnn/state_number.tf'
         self.img_size = 224
+        self.epochs = 100
 
     def get_data(self, data_dir):
         data = []
@@ -43,15 +41,15 @@ class DataPreparation():
     def graph(self):
         print(f'[INFO] Подготовка данных...')
 
-        train = self.get_data('test_model/train')
-        val = self.get_data('test_model/test')
+        train = self.get_data('state_number/train')
+        val = self.get_data('state_number/test')
 
         data = []
         for i in train:
             if i[1] == 0:
-                data.append("number")
+                data.append(self.str1)
             else:
-                data.append("Dog")
+                data.append(self.str2)
 
         sns.set_style('darkgrid')
         plot = sns.countplot(x=data)
@@ -60,12 +58,12 @@ class DataPreparation():
         plt.figure(figsize=(5, 5))
         plot = plt.imshow(train[1][0])
         plt.title(self.labels[train[0][1]])
-        plot.figure.savefig("output/number.png")
+        plot.figure.savefig(f"output/{self.str1}.png")
 
         plt.figure(figsize=(5, 5))
         plot = plt.imshow(train[-1][0])
         plt.title(self.labels[train[-1][1]])
-        plot.figure.savefig("output/Dog.png")
+        plot.figure.savefig(f"output/{self.str1}.png")
 
         return train, val
 
@@ -135,7 +133,7 @@ class DataPreparation():
         model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, batch_size=20, epochs=1, validation_data=(x_val, y_val))
+        history = model.fit(x_train, y_train, batch_size=32, epochs=self.epochs, validation_data=(x_val, y_val))
 
         return history, model, x_val, y_val
 
@@ -147,7 +145,7 @@ class DataPreparation():
         loss = history.history['loss']
         val_loss = history.history['val_loss']
 
-        epochs_range = range(1)
+        epochs_range = range(self.epochs)
 
         plt.figure(figsize=(15, 15))
         plt.subplot(2, 2, 1)
@@ -164,11 +162,11 @@ class DataPreparation():
         plt.savefig('output/saved_figure.png')
 
         print("[INFO] оценка сети...")
-        predictions = model.predict(x_val, batch_size=32)
-        # print(f'{predictions}')
-        # predictions = predictions.reshape(1, -1)[0]
-        print(classification_report(y_val, predictions.argmax(axis=1),
-                                    target_names=['number (Class 0)', 'Dog (Class 1)']))
+        predictions = model.predict_classes(x_val, batch_size=32)
+        print(f'{predictions}')
+        predictions = predictions.reshape(1, -1)[0]
+        print(classification_report(y_val, predictions,
+                                    target_names=[f'{self.str1} (Class 0)', f'{self.str2} (Class 1)']))
         # print(confusion_matrix(y_val, predictions.argmax(axis=1)))
         scores = model.evaluate(x_val, y_val, verbose=0)
         print(f'Точность: {scores[1] * 100}')
@@ -178,7 +176,7 @@ class DataPreparation():
 
         print(f'[INFO] Сохранение обученой модели...')
         # model.save('model_cnn/my_model1.h5')
-        model.save('model_cnn/my_model1.tf')
+        model.save(self.path_cnn)
 
         print(f'[INFO] Удаление обученой модели из памяти...')
         del model

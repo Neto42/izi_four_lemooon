@@ -7,11 +7,11 @@ from sklearn.metrics import classification_report
 
 class DataPrediction():
     def __init__(self):
-        self.str1 = 'number'
-        self.str2 = 'Dog'
+        self.str1 = 'frame'
+        self.str2 = 'logo'
         self.labels = [self.str1]
         self.img_size = 224
-        self.path_img = 'output1'
+        self.path_img = 'frame'
 
     def get_data(self, data_dir):
         data = []
@@ -61,7 +61,7 @@ class DataPrediction():
 
         print("[INFO] Оценка сети...")
         predictions = model.predict_classes(x_train, batch_size=1)
-        # print(f'{predictions}')
+        print(f'{predictions}')
         # print(classification_report(y_train, predictions))
         # print(confusion_matrix(y_val, predictions.argmax(axis=1)))
         scores = model.evaluate(x_train, y_train, verbose=0)
